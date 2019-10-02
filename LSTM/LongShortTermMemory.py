@@ -76,7 +76,7 @@ class LongShortTermMemory:
     def predict_future(self):
         # predict based on the last few weeks
         X_data = self.get_data(self.csv_future)
-        predictions = self.model.predict(X_data)  # create a state to know where the sequence is
+        predictions = self.model.predict(X_data)
         future = [predictions]
         future = np.array(future)
         print(future.shape)
@@ -121,6 +121,7 @@ class LongShortTermMemory:
     def get_training_data(self):
         # import the close data
         self.training_data = pd.read_csv(self.csv_train)
+        self.training_data = self.set_date_as_index(self.training_data)
         # training_set = self.training_data.iloc[:, 4:5].values  # get the close values
         training_set = [[x] for x in self.training_data[self.data_column].values]
         training_set = np.array(training_set)
@@ -167,6 +168,7 @@ class LongShortTermMemory:
     def predict(self):
         # test the model
         dataset_test = pd.read_csv(self.csv_test)  # import the test set that we will make predictions on
+        self.dataset_test = self.set_date_as_index(dataset_test)
         real_stock_price = [[x] for x in dataset_test[self.data_column].values]
         real_stock_price = np.array(real_stock_price)
 
@@ -195,8 +197,8 @@ class LongShortTermMemory:
 
         # plot the data
         plt.plot(real_stock_price, color='grey', label=f'{self.name} Stock Price')
-        plt.plot(test_predict_price, color='blue', label=f'Predicted {self.name} Actual Stock Price')
-        plt.plot(future, color='green', label=f'Predicted {self.name} Future Predicted Stock Price')
+        plt.plot(test_predict_price, label=f'Predicted {self.name} Stock Price')
+        plt.plot(future, label=f'Predicted {self.name} Future Stock Price')
         plt.title(f'{self.name} Test Price Prediction')
         plt.xlabel('Time')
         plt.ylabel(f'{self.name} Stock Price')
@@ -218,7 +220,7 @@ class LongShortTermMemory:
 if __name__ == '__main__':
     lstm = LongShortTermMemory(name='costco',
                                timestep=7,
-                               epoch=5,
+                               epoch=20,
                                batch=7,
                                output_dim=50,
                                dropout=20,
