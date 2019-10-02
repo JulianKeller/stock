@@ -79,7 +79,6 @@ class LongShortTermMemory:
         predictions = self.model.predict(X_data)
         future = [predictions]
         future = np.array(future)
-        print(future.shape)
         future = self.scaler.inverse_transform(future[0])  # rescale prices
         return future
 
@@ -209,7 +208,7 @@ class LongShortTermMemory:
         plot = plt.gcf()
         plt.show()
         plt.draw()
-        plot.savefig(f'plot_{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
 
     def run_lstm(self):
         self.get_training_data()
@@ -218,30 +217,31 @@ class LongShortTermMemory:
 
 
 if __name__ == '__main__':
-    lstm = LongShortTermMemory(name='costco',
-                               timestep=7,
-                               epoch=20,
-                               batch=7,
-                               output_dim=50,
-                               dropout=20,
-                               data_column='Close',
-                               csv_train_file='data/costco.csv',
-                               csv_test_file='data/costco-4weeks.csv',
-                               csv_future='data/costco-future.csv')
-    lstm.run_lstm()
+    # lstm = LongShortTermMemory(name='costco',
+    #                            timestep=7,
+    #                            epoch=20,
+    #                            batch=7,
+    #                            output_dim=50,
+    #                            dropout=20,
+    #                            data_column='Close',
+    #                            csv_train_file='data/costco.csv',
+    #                            csv_test_file='data/costco-4weeks.csv',
+    #                            csv_future='data/costco-future.csv')
+    # lstm.run_lstm()
 
     # list of stock files
-    companies = ['costco']
-    train_stocks = []
-    test_stocks = []
-    future_stocks = []
-    columns = ['Open', 'High', 'Low', 'Close', 'Adj', 'Close']
+    # All arrays below must have companies data in the same order
+    companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500']
+    train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
+    test_stocks = ['data/adidas/ADDYY-test.csv', 'data/bitcoin/BTC-USD-future.csv', 'data/costco/COST-future.csv', 'data/s&p/^GSPC-future.csv']
+    future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv', 'data/s&p/^GSPC-test.csv']
+    columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
 
-    for i in range(train_stocks):
+    for i in range(len(train_stocks)):
         for col in columns:
             lstm = LongShortTermMemory(name=f'{companies[i]}_{col}',
                                        timestep=7,
-                                       epoch=20,
+                                       epoch=1,
                                        batch=7,
                                        output_dim=50,
                                        dropout=20,
