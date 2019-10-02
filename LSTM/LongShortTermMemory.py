@@ -229,3 +229,26 @@ if __name__ == '__main__':
                                csv_test_file='data/costco-4weeks.csv',
                                csv_future='data/costco-future.csv')
     lstm.run_lstm()
+
+    # list of stock files
+    companies = ['costco']
+    train_stocks = []
+    test_stocks = []
+    future_stocks = []
+    columns = ['Open', 'High', 'Low', 'Close', 'Adj', 'Close']
+
+    for i in range(train_stocks):
+        for col in columns:
+            lstm = LongShortTermMemory(name=f'{companies[i]}_{col}',
+                                       timestep=7,
+                                       epoch=20,
+                                       batch=7,
+                                       output_dim=50,
+                                       dropout=20,
+                                       data_column=col,
+                                       csv_train_file=train_stocks[i],
+                                       csv_test_file=test_stocks[i],
+                                       csv_future=future_stocks[i])
+            lstm.run_lstm()
+
+
