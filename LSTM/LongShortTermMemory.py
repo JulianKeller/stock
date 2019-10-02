@@ -18,9 +18,15 @@ from sklearn.preprocessing import MinMaxScaler
 # https://machinelearningmastery.com/make-predictions-long-short-term-memory-models-keras/
 # https://stackoverflow.com/questions/48760472/how-to-use-the-keras-model-to-forecast-for-future-dates-or-events
 
+# Requirements:
+# Python3.6+
+# TensorFlow library
+# keras library
+
 
 class LongShortTermMemory:
-    def __init__(self, name, timestep, epoch, batch, output_dim, dropout, data_column, csv_train_file, csv_test_file):
+    def __init__(self, name, timestep, epoch, batch, output_dim, dropout, data_column, csv_train_file, csv_test_file,
+                 csv_future):
         self.name = name
         self.timestep = timestep
         self.epoch = epoch
@@ -32,6 +38,7 @@ class LongShortTermMemory:
 
         self.csv_train = csv_train_file
         self.csv_test = csv_test_file
+        self.csv_future = csv_future
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.X_train = None
         self.y_train = None
@@ -41,8 +48,6 @@ class LongShortTermMemory:
     def get_training_data(self):
         # import the close data
         self.training_data = pd.read_csv(self.csv_train)
-
-        # TODO can I set this to use word like 'Close' or open
         # training_set = self.training_data.iloc[:, 4:5].values  # get the close values
         training_set = [[x] for x in self.training_data[self.data_column].values]
         training_set = np.array(training_set)
@@ -53,7 +58,6 @@ class LongShortTermMemory:
         # put data into 3d array for LSTM digestion
         X_train = []
         y_train = []
-        # timestep = 60
         for i in range(self.timestep, len(self.training_data)):
             X_train.append(training_set_scaled[i - self.timestep:i, 0])
             y_train.append(training_set_scaled[i, 0])
@@ -109,13 +113,13 @@ class LongShortTermMemory:
         X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
         # make the prediction
-        predicted_stock_price = self.model.predict(X_test)
-        predicted_stock_price = self.scaler.inverse_transform(predicted_stock_price)    # rescale prices
+        test_predict_price = self.model.predict(X_test)
+        test_predict_price = self.scaler.inverse_transform(test_predict_price)    # rescale prices
 
         # plot the data
         plt.plot(real_stock_price, color='grey', label=f'{self.name} Stock Price')
-        plt.plot(predicted_stock_price, color='blue', label=f'Predicted {self.name} Stock Price')
-        plt.title(f'{self.name} Stock Price Prediction')
+        plt.plot(test_predict_price, color='blue', label=f'Predicted {self.name} Actual Stock Price')
+        plt.title(f'{self.name} Test Price Prediction')
         plt.xlabel('Time')
         plt.ylabel(f'{self.name} Stock Price')
         plt.legend()
@@ -135,12 +139,12 @@ class LongShortTermMemory:
 
 if __name__ == '__main__':
     lstm = LongShortTermMemory(name='costco',
-                               timestep=60,
-                               epoch=100,
-                               batch=32,
+                               timestep=7,
+                               epoch=5,
+                               batch=7,
                                output_dim=50,
                                dropout=20,
                                data_column='Close',
-                               csv_train_file='data/costco_large.csv',
+                               csv_train_file='data/costco.csv',
                                csv_test_file='data/costco-4weeks.csv')
     lstm.run_lstm()
