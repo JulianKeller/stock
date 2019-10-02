@@ -45,6 +45,79 @@ class LongShortTermMemory:
         self.model = None
         self.training_data = None
 
+    # array is an np array
+    def max_range(self, array):
+        # determine max size of the data based as a multiple of the batch size
+        max_range = int((len(array) - self.timestep) / self.batch)
+        max_range = max_range * self.batch + self.timestep
+        return max_range
+
+    # reshape the array
+    def reshape_2d_array(self, array):
+        max_range = self.max_range(array)
+        array_3d = []
+        for i in range(self.timestep, max_range):
+            array_3d.append(array[i - self.timestep:i, 0])
+        array_3d = np.array(array_3d)
+        array_3d = np.reshape(array_3d, (array_3d.shape[0], array_3d.shape[1], 1))
+        return array_3d
+
+    # offset a numpy array for displaying the graph correctly
+    def offset_array(self, array, offset):
+        offset_arr = []
+        for i in range(offset):
+            offset_arr.append([None])
+        for i in range(len(array)):
+            offset_arr.append(array[i])
+        offset_arr = np.array(offset_arr)
+        return offset_arr
+
+    # predicts the future!
+    def predict_future(self):
+        # predict based on the last few weeks
+        X_data = self.get_data(self.csv_future)
+        predictions = self.model.predict(X_data)  # create a state to know where the sequence is
+        future = [predictions]
+        future = np.array(future)
+        print(future.shape)
+        future = self.scaler.inverse_transform(future[0])  # rescale prices
+        return future
+
+    # use the pandas dataframe as the index
+    @staticmethod
+    def set_date_as_index(data_frame):
+        data_frame['Date'] = pd.to_datetime(data_frame['Date'])
+        data_frame.set_index('Date', inplace=True)
+        return data_frame
+
+    # get data from a csv file
+    def get_data(self, csv):
+        # import the close data
+        data = pd.read_csv(csv)
+
+        # set the index to be the dates
+        data = self.set_date_as_index(data)
+
+        data_set = [[x] for x in data[self.data_column].values]
+        data_set = np.array(data_set)
+
+        # scale the data for performance
+        data_set_scaled = self.scaler.fit_transform(data_set)
+
+        # put data into 3d array for LSTM digestion
+        X_data = []  # TODO refactor name
+
+        # determine max size of the data based as a multiple of the batch size
+        max_range = self.max_range(data)
+        for i in range(self.timestep, max_range):
+            X_data.append(data_set_scaled[i - self.timestep:i, 0])
+
+        # convert the data to numpy arrays
+        X_data = np.array(X_data)
+        # reshape the data for the LSTM model
+        X_data = np.reshape(X_data, (X_data.shape[0], X_data.shape[1], 1))
+        return X_data
+
     def get_training_data(self):
         # import the close data
         self.training_data = pd.read_csv(self.csv_train)
@@ -116,9 +189,14 @@ class LongShortTermMemory:
         test_predict_price = self.model.predict(X_test)
         test_predict_price = self.scaler.inverse_transform(test_predict_price)    # rescale prices
 
+        # predict the future
+        future = self.predict_future()
+        future = self.offset_array(future, len(real_stock_price))
+
         # plot the data
         plt.plot(real_stock_price, color='grey', label=f'{self.name} Stock Price')
         plt.plot(test_predict_price, color='blue', label=f'Predicted {self.name} Actual Stock Price')
+        plt.plot(future, color='green', label=f'Predicted {self.name} Future Predicted Stock Price')
         plt.title(f'{self.name} Test Price Prediction')
         plt.xlabel('Time')
         plt.ylabel(f'{self.name} Stock Price')
@@ -146,5 +224,6 @@ if __name__ == '__main__':
                                dropout=20,
                                data_column='Close',
                                csv_train_file='data/costco.csv',
-                               csv_test_file='data/costco-4weeks.csv')
+                               csv_test_file='data/costco-4weeks.csv',
+                               csv_future='data/costco-future.csv')
     lstm.run_lstm()
