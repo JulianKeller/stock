@@ -10,7 +10,7 @@ Due Friday October 4
     - [ ] Steps that you have taken to derive at result
     - [ ] An explanation of the logic for each step
     - [ ] Explanation of the responsibilities assigned to each team member
-- [ ] Download 6 more stocks data
+- [ ] Download 3 more stocks data
 
 Due November 6
 - [ ] Make Comparison to actual stock prices, 
