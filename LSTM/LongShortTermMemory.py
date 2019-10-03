@@ -1,4 +1,5 @@
 from time import time
+import timeit
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -240,12 +241,19 @@ if __name__ == '__main__':
 
     # list of stock files
     # All arrays below must have companies data in the same order
-    companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500']
-    train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
-    test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
-    future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv', 'data/s&p/^GSPC-test.csv']
+    # companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500']
+    # train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
+    # test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
+    # future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv', 'data/s&p/^GSPC-test.csv']
+    
+    companies = ['ADP', 'Honeywell', 'Medtronic']
+    train_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
+    test_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
+    future_stocks = ['data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv']
+    
     columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
 
+    start = timeit.default_timer()
     for i in range(len(train_stocks)):
         for col in columns:
             lstm = LongShortTermMemory(name=f'{companies[i]}_{col}',
@@ -260,4 +268,5 @@ if __name__ == '__main__':
                                        csv_future=future_stocks[i])
             lstm.run_lstm()
 
+    print(f'Total run time: {timeit.default_timer() - start}')
 

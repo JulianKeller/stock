@@ -1,5 +1,5 @@
 # Machine Learning Project 1 - Stock Market Prediction
-
+Team: JET=NaN
 
 
 ## TODO
@@ -26,6 +26,8 @@ Each team member worked on a different machine learning algorithm.
 
 
 ## Julian - Long Short Term Memory 
+
+
 #### LSTM Sources Referenced
  - https://medium.com/neuronio/predicting-stock-prices-with-lstm-349f5a0974d4
  - https://heartbeat.fritz.ai/using-a-keras-long-shortterm-memory-lstm-model-to-predict-stock-prices-a08c9f69aa74
