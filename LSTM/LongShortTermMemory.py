@@ -32,11 +32,9 @@ class LongShortTermMemory:
         self.timestep = timestep
         self.epoch = epoch
         self.batch = batch
-
         self.output_dim = output_dim
         self.dropout_percent = dropout / 100
         self.data_column = data_column
-
         self.csv_train = csv_train_file
         self.csv_test = csv_test_file
         self.csv_future = csv_future
@@ -94,29 +92,21 @@ class LongShortTermMemory:
     def get_data(self, csv):
         # import the close data
         data = pd.read_csv(csv)
-
         # set the index to be the dates
         data = self.set_date_as_index(data)
-
         data_set = [[x] for x in data[self.data_column].values]
         data_set = np.array(data_set)
-
         # scale the data for performance
         data_set_scaled = self.scaler.fit_transform(data_set)
-
         # put data into 3d array for LSTM digestion
-        X_data = []  # TODO refactor name
-
+        X_data = []
         # determine max size of the data based as a multiple of the batch size
-
         max_range = self.max_range(data)
         for i in range(self.timestep, max_range):
             X_data.append(data_set_scaled[i - self.timestep:i, 0])
-
         # convert the data to numpy arrays
         X_data = np.array(X_data)
         # reshape the data for the LSTM model
-        print("X_data shape", X_data.shape)
         X_data = np.reshape(X_data, (X_data.shape[0], X_data.shape[1], 1))
         return X_data
 
@@ -124,20 +114,17 @@ class LongShortTermMemory:
         # import the close data
         self.training_data = pd.read_csv(self.csv_train)
         self.training_data = self.set_date_as_index(self.training_data)
-        # training_set = self.training_data.iloc[:, 4:5].values  # get the close values
+        # get the close values
         training_set = [[x] for x in self.training_data[self.data_column].values]
         training_set = np.array(training_set)
-
         # scale the data for performance
         training_set_scaled = self.scaler.fit_transform(training_set)
-
         # put data into 3d array for LSTM digestion
         X_train = []
         y_train = []
         for i in range(self.timestep, len(self.training_data)):
             X_train.append(training_set_scaled[i - self.timestep:i, 0])
             y_train.append(training_set_scaled[i, 0])
-
         # convert the data to numpy arrays
         X_train = np.array(X_train)
         self.y_train = np.array(y_train)
@@ -147,7 +134,6 @@ class LongShortTermMemory:
     # Build the LSTM model
     def build_model(self):
         model = Sequential()  # initialize the model
-
         # add layers to our model
         model.add(LSTM(units=self.output_dim, return_sequences=True, input_shape=(self.X_train.shape[1], 1)))
         model.add(Dropout(self.dropout_percent))
@@ -158,10 +144,8 @@ class LongShortTermMemory:
         model.add(LSTM(units=self.output_dim))
         model.add(Dropout(self.dropout_percent))
         model.add(Dense(units=1))  # add layer to specify output of 1 layer
-
         # compile with the Adam optimizer and computer the mean squared error
         model.compile(optimizer='adam', loss='mean_squared_error')
-
         # run the model, this may take several minutes
         model.fit(self.X_train, self.y_train, epochs=self.epoch, batch_size=self.batch)
         self.model = model
@@ -170,37 +154,26 @@ class LongShortTermMemory:
     def predict(self):
         # test the model
         dataset_test = pd.read_csv(self.csv_test)  # import the test set that we will make predictions on
-
         self.dataset_test = self.set_date_as_index(dataset_test)
         real_stock_price = [[x] for x in dataset_test[self.data_column].values]
         real_stock_price = np.array(real_stock_price)
-
-
-        # merge the training and test sets on axis -
-        # dataset_total = pd.concat((self.training_data[self.data_column], dataset_test[self.data_column]), axis=0)
-
         dataset_total = self.training_data[self.data_column]
         # transform the new dataset for performance
-        # inputs = dataset_total[len(dataset_total) - len(dataset_test) - self.timestep:].values
         inputs = dataset_total.values
         inputs = inputs.reshape(-1, 1)
         inputs = self.scaler.transform(inputs)
-
         # Reshape the data to a 3d array
         X_test = []
         for i in range(self.timestep, len(dataset_test)):
             X_test.append(inputs[i - self.timestep:i, 0])
         X_test = np.array(X_test)
         X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-
         # make the prediction
         test_predict_price = self.model.predict(X_test)
         test_predict_price = self.scaler.inverse_transform(test_predict_price)    # rescale prices
-
         # # predict the future
         future = self.predict_future()
         future = self.offset_array(future, len(real_stock_price))
-
         # plot the data
         plt.plot(real_stock_price, color='darkgrey', label=f'{self.name} Stock Price')
         plt.plot(test_predict_price, color='orange', label=f'Predicted {self.name} Stock Price')
@@ -209,7 +182,6 @@ class LongShortTermMemory:
         plt.xlabel('Time')
         plt.ylabel(f'{self.name} Stock Price')
         plt.legend()
-
         # save the plot
         timestamp = int(time())  # time since epoch
         plot = plt.gcf()
@@ -224,21 +196,7 @@ class LongShortTermMemory:
 
 
 if __name__ == '__main__':
-
-    #timestep and batch must be a multiple of at least 2 of the number of data points in csv_future
-    # lstm = LongShortTermMemory(name='Adidas',
-    #                            timestep=10,
-    #                            epoch=10,
-    #                            batch=10,
-    #                            output_dim=50,
-    #                            dropout=20,
-    #                            data_column='Close',
-    #                            csv_train_file='data/adidas/ADDYY.csv',
-    #                            csv_test_file='data/adidas/ADDYY.csv',
-    #                            csv_future='data/adidas/ADDYY-future.csv')
-    # lstm.run_lstm()
-
-
+    # uncomment one section below to run the model for those companies
     # list of stock files
     # All arrays below must have companies data in the same order
     # companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500']
@@ -246,13 +204,22 @@ if __name__ == '__main__':
     # test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
     # future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv', 'data/s&p/^GSPC-test.csv']
     
-    companies = ['ADP', 'Honeywell', 'Medtronic']
-    train_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
-    test_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
-    future_stocks = ['data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv']
+    # companies = ['ADP', 'Honeywell', 'Medtronic']
+    # train_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
+    # test_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
+    # future_stocks = ['data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv']
     
-    columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
+    # companies = ['FireEye', 'GoPro', 'Tesla']
+    # train_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # test_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # future_stocks = ['data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
 
+    companies = ['Tesla']
+    train_stocks = ['data/tesla/TSLA.csv']
+    test_stocks = ['data/tesla/TSLA.csv']
+    future_stocks = ['data/tesla/TSLA-future.csv']
+
+    columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
     start = timeit.default_timer()
     for i in range(len(train_stocks)):
         for col in columns:
@@ -267,6 +234,4 @@ if __name__ == '__main__':
                                        csv_test_file=test_stocks[i],
                                        csv_future=future_stocks[i])
             lstm.run_lstm()
-
     print(f'Total run time: {timeit.default_timer() - start}')
-
