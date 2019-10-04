@@ -107,7 +107,6 @@ class LongShortTermMemory:
         # convert the data to numpy arrays
         X_data = np.array(X_data)
         # reshape the data for the LSTM model
-        print("X_data shape", X_data.shape)
         X_data = np.reshape(X_data, (X_data.shape[0], X_data.shape[1], 1))
         return X_data
 
@@ -210,10 +209,15 @@ if __name__ == '__main__':
     # test_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
     # future_stocks = ['data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv']
     
-    companies = ['FireEye', 'GoPro', 'Tesla']
-    train_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    test_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    future_stocks = ['data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA.csv']
+    # companies = ['FireEye', 'GoPro', 'Tesla']
+    # train_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # test_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # future_stocks = ['data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
+
+    companies = ['Tesla']
+    train_stocks = ['data/tesla/TSLA.csv']
+    test_stocks = ['data/tesla/TSLA.csv']
+    future_stocks = ['data/tesla/TSLA-future.csv']
 
     columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
     start = timeit.default_timer()

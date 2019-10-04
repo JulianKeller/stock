@@ -89,4 +89,4 @@ def plotting_single_file(x_train, plot_list):
 
 
 if __name__ == '__main__':
-    plotting_single_file('C:\\Users\\emang\\Downloads\\COST.csv', ['Adj Close'])
+    plotting_single_file('../LSTM/data/costco/COST.csv', ['Close'])
