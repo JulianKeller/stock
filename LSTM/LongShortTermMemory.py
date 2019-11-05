@@ -10,6 +10,7 @@ from keras.layers import LSTM
 from keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
 
+
 # Sources Referenced
 # https://medium.com/neuronio/predicting-stock-prices-with-lstm-349f5a0974d4
 # https://heartbeat.fritz.ai/using-a-keras-long-shortterm-memory-lstm-model-to-predict-stock-prices-a08c9f69aa74
@@ -27,7 +28,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 class LongShortTermMemory:
     def __init__(self, name, timestep, epoch, batch, output_dim, dropout, data_column, csv_train_file, csv_future,
-                 csv_test_file=None):
+                 csv_test_file=None, csv_actual_future=None):
         self.name = name
         self.timestep = timestep
         self.epoch = epoch
@@ -38,6 +39,7 @@ class LongShortTermMemory:
         self.csv_train = csv_train_file
         self.csv_test = csv_test_file
         self.csv_future = csv_future
+        self.csv_actual_future = csv_actual_future
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.X_train = None
         self.y_train = None
@@ -170,14 +172,25 @@ class LongShortTermMemory:
         X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
         # make the prediction
         test_predict_price = self.model.predict(X_test)
-        test_predict_price = self.scaler.inverse_transform(test_predict_price)    # rescale prices
+        test_predict_price = self.scaler.inverse_transform(test_predict_price)  # rescale prices
         # # predict the future
         future = self.predict_future()
         future = self.offset_array(future, len(real_stock_price))
+
+        # actual future data
+        if self.csv_actual_future is not None:
+            actual_future = pd.read_csv(self.csv_actual_future)  # import the test set that we will make predictions on
+            self.actual_future = self.set_date_as_index(actual_future)
+            actual_future_stock_price = [[x] for x in actual_future[self.data_column].values]
+            actual_future_stock_price = np.array(actual_future_stock_price)
+            actual_future_stock_price = self.offset_array(actual_future_stock_price, len(real_stock_price))
+
         # plot the data
         plt.plot(real_stock_price, color='darkgrey', label=f'{self.name} Stock Price')
         plt.plot(test_predict_price, color='orange', label=f'Predicted {self.name} Stock Price')
         plt.plot(future, color='darkviolet', label=f'Predicted {self.name} Future Stock Price')
+        if self.csv_actual_future is not None:
+            plt.plot(actual_future_stock_price, color='green', label=f'{self.name} Actual Future Stock Price')
         plt.title(f'{self.name} Test Price Prediction')
         plt.xlabel('Time')
         plt.ylabel(f'{self.name} Stock Price')
@@ -187,7 +200,10 @@ class LongShortTermMemory:
         plot = plt.gcf()
         plt.show()
         plt.draw()
-        plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        if self.csv_actual_future is not None:
+            plot.savefig(f'future_vs_actual_plots/af_{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        else:
+            plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
 
     def run_lstm(self):
         self.get_training_data()
@@ -198,26 +214,30 @@ class LongShortTermMemory:
 if __name__ == '__main__':
     # uncomment one section below to run the model for those companies
     # list of stock files
-    # All arrays below must have companies data in the same order
-    # companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500']
-    # train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
-    # test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv']
-    # future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv', 'data/s&p/^GSPC-test.csv']
-    
-    # companies = ['ADP', 'Honeywell', 'Medtronic']
-    # train_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
-    # test_stocks = ['data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv']
-    # future_stocks = ['data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv']
-    
-    # companies = ['FireEye', 'GoPro', 'Tesla']
-    # train_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    # test_stocks = ['data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    # future_stocks = ['data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
+    # companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500', 'ADP', 'Honeywell', 'Medtronic', 'FireEye', 'GoPro', 'Tesla']
+    # train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv',
+    #                 'data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv',
+    #                 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv',
+    #                'data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv',
+    #                'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-future.csv', 'data/costco/COST-future.csv',
+    #                  'data/s&p/^GSPC-future.csv',
+    #                  'data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv',
+    #                                                                              'data/fireeye/FEYE-future.csv',
+    #                  'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
+    # actual_future_stocks = ['data/adidas/ADDYY-30.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv',
+    #                         'data/s&p/^GSPC-test.csv',
+    #                         'data/adp/ADP-30.csv', 'data/honeywell/HON-30.csv', 'data/medtronic/MDT-30.csv',
+    #                         'data/fireeye/FEYE-30.csv', 'data/gopro/GPRO-30.csv', 'data/tesla/TSLA-30.csv']
 
-    companies = ['Tesla']
-    train_stocks = ['data/tesla/TSLA.csv']
-    test_stocks = ['data/tesla/TSLA.csv']
-    future_stocks = ['data/tesla/TSLA-future.csv']
+
+
+    companies = ['Medtronic', 'FireEye', 'GoPro', 'Tesla']
+    train_stocks = ['data/medtronic/MDT.csv', 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    test_stocks = ['data/medtronic/MDT.csv', 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    future_stocks = ['data/medtronic/MDT-future.csv', 'data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
+    actual_future_stocks = ['data/medtronic/MDT-30.csv','data/fireeye/FEYE-30.csv', 'data/gopro/GPRO-30.csv', 'data/tesla/TSLA-30.csv']
 
     columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
     start = timeit.default_timer()
@@ -232,6 +252,7 @@ if __name__ == '__main__':
                                        data_column=col,
                                        csv_train_file=train_stocks[i],
                                        csv_test_file=test_stocks[i],
-                                       csv_future=future_stocks[i])
+                                       csv_future=future_stocks[i],
+                                       csv_actual_future=actual_future_stocks[i])
             lstm.run_lstm()
     print(f'Total run time: {timeit.default_timer() - start}')
