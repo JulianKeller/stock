@@ -27,7 +27,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 class LongShortTermMemory:
     def __init__(self, name, timestep, epoch, batch, output_dim, dropout, data_column, csv_train_file, csv_future,
-                 csv_test_file=None):
+                 csv_test_file=None, csv_actual_future=None):
         self.name = name
         self.timestep = timestep
         self.epoch = epoch
@@ -38,6 +38,7 @@ class LongShortTermMemory:
         self.csv_train = csv_train_file
         self.csv_test = csv_test_file
         self.csv_future = csv_future
+        self.csv_actual_future = csv_actual_future
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.X_train = None
         self.y_train = None
@@ -174,10 +175,22 @@ class LongShortTermMemory:
         # # predict the future
         future = self.predict_future()
         future = self.offset_array(future, len(real_stock_price))
+
+        # actual future data
+        if self.csv_actual_future is not None:
+            actual_future = pd.read_csv(self.csv_actual_future)  # import the test set that we will make predictions on
+            self.actual_future = self.set_date_as_index(actual_future)
+            actual_future_stock_price = [[x] for x in actual_future[self.data_column].values]
+            actual_future_stock_price = np.array(actual_future_stock_price)
+            actual_future_stock_price = self.offset_array(actual_future_stock_price, len(real_stock_price))
+
+        
         # plot the data
         plt.plot(real_stock_price, color='darkgrey', label=f'{self.name} Stock Price')
         plt.plot(test_predict_price, color='orange', label=f'Predicted {self.name} Stock Price')
         plt.plot(future, color='darkviolet', label=f'Predicted {self.name} Future Stock Price')
+        if self.csv_actual_future is not None:
+            plt.plot(actual_future_stock_price, color='green', label=f'{self.name} Actual Future Stock Price')
         plt.title(f'{self.name} Test Price Prediction')
         plt.xlabel('Time')
         plt.ylabel(f'{self.name} Stock Price')
@@ -187,7 +200,10 @@ class LongShortTermMemory:
         plot = plt.gcf()
         plt.show()
         plt.draw()
-        plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        if self.csv_actual_future is not None:
+            plot.savefig(f'future_vs_actual_plots/af_{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        else:
+            plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
 
     def run_lstm(self):
         self.get_training_data()
@@ -218,6 +234,7 @@ if __name__ == '__main__':
     train_stocks = ['data/tesla/TSLA.csv']
     test_stocks = ['data/tesla/TSLA.csv']
     future_stocks = ['data/tesla/TSLA-future.csv']
+    csv_actual_future = ['data/tesla/TSLA-30.csv']
 
     columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
     start = timeit.default_timer()
@@ -232,6 +249,7 @@ if __name__ == '__main__':
                                        data_column=col,
                                        csv_train_file=train_stocks[i],
                                        csv_test_file=test_stocks[i],
-                                       csv_future=future_stocks[i])
+                                       csv_future=future_stocks[i],
+                                       csv_actual_future=csv_actual_future[i])
             lstm.run_lstm()
     print(f'Total run time: {timeit.default_timer() - start}')
