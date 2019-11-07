@@ -173,37 +173,44 @@ class LongShortTermMemory:
         # make the prediction
         test_predict_price = self.model.predict(X_test)
         test_predict_price = self.scaler.inverse_transform(test_predict_price)  # rescale prices
-        # # predict the future
+        # predict the future
         future = self.predict_future()
-        future = self.offset_array(future, len(real_stock_price))
+        # save predicted data to a csv
+        data = pd.DataFrame(future)
+        print(data)
+        data.to_csv(f"data/predictions/{self.name}-predicted.csv",)
+
+        # future = self.offset_array(future, len(real_stock_price))
+
+
 
         # actual future data
-        if self.csv_actual_future is not None:
-            actual_future = pd.read_csv(self.csv_actual_future)  # import the test set that we will make predictions on
-            self.actual_future = self.set_date_as_index(actual_future)
-            actual_future_stock_price = [[x] for x in actual_future[self.data_column].values]
-            actual_future_stock_price = np.array(actual_future_stock_price)
-            actual_future_stock_price = self.offset_array(actual_future_stock_price, len(real_stock_price))
-
-        # plot the data
-        plt.plot(real_stock_price, color='darkgrey', label=f'{self.name} Stock Price')
-        plt.plot(test_predict_price, color='orange', label=f'Predicted {self.name} Stock Price')
-        plt.plot(future, color='darkviolet', label=f'Predicted {self.name} Future Stock Price')
-        if self.csv_actual_future is not None:
-            plt.plot(actual_future_stock_price, color='green', label=f'{self.name} Actual Future Stock Price')
-        plt.title(f'{self.name} Test Price Prediction')
-        plt.xlabel('Time')
-        plt.ylabel(f'{self.name} Stock Price')
-        plt.legend()
-        # save the plot
-        timestamp = int(time())  # time since epoch
-        plot = plt.gcf()
-        plt.show()
-        plt.draw()
-        if self.csv_actual_future is not None:
-            plot.savefig(f'future_vs_actual_plots/af_{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
-        else:
-            plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        # if self.csv_actual_future is not None:
+        #     actual_future = pd.read_csv(self.csv_actual_future)  # import the test set that we will make predictions on
+        #     self.actual_future = self.set_date_as_index(actual_future)
+        #     actual_future_stock_price = [[x] for x in actual_future[self.data_column].values]
+        #     actual_future_stock_price = np.array(actual_future_stock_price)
+        #     actual_future_stock_price = self.offset_array(actual_future_stock_price, len(real_stock_price))
+        #
+        # # # plot the data
+        # # plt.plot(real_stock_price, color='darkgrey', label=f'{self.name} Stock Price')
+        # # plt.plot(test_predict_price, color='orange', label=f'Predicted {self.name} Stock Price')
+        # # plt.plot(future, color='darkviolet', label=f'Predicted {self.name} Future Stock Price')
+        # # if self.csv_actual_future is not None:
+        # #     plt.plot(actual_future_stock_price, color='green', label=f'{self.name} Actual Future Stock Price')
+        # # plt.title(f'{self.name} Test Price Prediction')
+        # # plt.xlabel('Time')
+        # # plt.ylabel(f'{self.name} Stock Price')
+        # # plt.legend()
+        # # # save the plot
+        # # timestamp = int(time())  # time since epoch
+        # # plot = plt.gcf()
+        # # plt.show()
+        # # plt.draw()
+        # # if self.csv_actual_future is not None:
+        # #     plot.savefig(f'future_vs_actual_plots/af_{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
+        # # else:
+        # #     plot.savefig(f'plots/{self.name}_{self.epoch}_{timestamp}.png', dpi=100)
 
     def run_lstm(self):
         self.get_training_data()
