@@ -62,7 +62,7 @@ if __name__ == '__main__':
             data.to_csv(result, sep=',')        # save the csv data
 
             plot_result = f'act_vs_pred/{comp[0]}_{col}_cmp.png'
-            plot = display_graph(data, 'Adidas', col)
+            plot = display_graph(data, comp[0], col)
             plot.savefig(plot_result, dpi=100)
 
     print(f'Total run time: {timeit.default_timer() - start}')
