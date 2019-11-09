@@ -1,6 +1,7 @@
 import csv
 import pandas as pd
 import matplotlib.pyplot as plt
+from os import path
 
 # TODO
 # read in the predicted vs the actual
@@ -15,14 +16,14 @@ def compare_columns(col1, col2):
 # TODO output future calculated data from program
 # line 176: future = self.predict_future()
 
-def read_files(actual, predicted):
-    columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
+def read_files(actual, predicted, column):
+    # columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
     act = pd.read_csv(actual)
     pred = pd.read_csv(predicted)
     df = pd.DataFrame()
     df['Date'] = act['Date']
-    df['Actual'] = act['Close']
-    df['Predicted'] = pred['Close']
+    df['Actual'] = act[column]
+    df['Predicted'] = pred['0']
     return df
 
 def display_graph(df, company):
@@ -40,7 +41,29 @@ def display_graph(df, company):
 
 
 if __name__ == '__main__':
-    act = 'data/adidas/ADDYY-30.csv'
-    fut = 'data/adidas/ADDYY-future.csv'
-    data = read_files(act, fut)
-    display_graph(data, 'Adidas')
+    columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
+    companies = [
+        ['Adidas', 'ADDYY'],
+        ['adp', 'ADP'],
+        ['Bitcoin', 'BTC-USD'],
+        ['Costco', 'COST'],
+        ['Fireeye', 'FEYE'],
+        ['Gopro', 'GPRO'],
+        ['Honeywell', 'HON'],
+        ['medtronic', 'MDT'],
+        ['s&p', '^GSPC'],
+        ['Tesla', 'TSLA'],
+    ]
+
+    for comp in companies:
+        for col in columns:
+            act = f'data/{comp[0].lower()}/{comp[1]}-30.csv'
+            fut = f'data/predictions/{comp[0]}_{col}-predicted.csv'
+            print(path.exists(act), act)
+            print(path.exists(fut), fut, '\n')
+            data = read_files(act, fut, col)
+            display_graph(data, 'Adidas')
+        exit()
+
+    # act = 'data/adidas/ADDYY-30.csv'
+    # fut = 'data/predictions/Adidas_Open-predicted.csv'
