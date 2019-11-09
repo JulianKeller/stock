@@ -225,30 +225,30 @@ class LongShortTermMemory:
 if __name__ == '__main__':
     # uncomment one section below to run the model for those companies
     # list of stock files
-    companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500', 'ADP', 'Honeywell', 'Medtronic', 'FireEye', 'GoPro', 'Tesla']
-    train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv',
-                    'data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv',
-                    'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv',
-                   'data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv',
-                   'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-future.csv', 'data/costco/COST-future.csv',
-                     'data/s&p/^GSPC-future.csv',
-                     'data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv',
-                                                                                 'data/fireeye/FEYE-future.csv',
-                     'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
-    actual_future_stocks = ['data/adidas/ADDYY-30.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv',
-                            'data/s&p/^GSPC-test.csv',
-                            'data/adp/ADP-30.csv', 'data/honeywell/HON-30.csv', 'data/medtronic/MDT-30.csv',
-                            'data/fireeye/FEYE-30.csv', 'data/gopro/GPRO-30.csv', 'data/tesla/TSLA-30.csv']
+    # companies = ['Adidas', 'Bitcoin', 'Costco', 'S&P 500', 'ADP', 'Honeywell', 'Medtronic', 'FireEye', 'GoPro', 'Tesla']
+    # train_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv',
+    #                 'data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv',
+    #                 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # test_stocks = ['data/adidas/ADDYY.csv', 'data/bitcoin/BTC-USD.csv', 'data/costco/COST.csv', 'data/s&p/^GSPC.csv',
+    #                'data/adp/ADP.csv', 'data/honeywell/HON.csv', 'data/medtronic/MDT.csv',
+    #                'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    # future_stocks = ['data/adidas/ADDYY-future.csv', 'data/bitcoin/BTC-USD-future.csv', 'data/costco/COST-future.csv',
+    #                  'data/s&p/^GSPC-future.csv',
+    #                  'data/adp/ADP-future.csv', 'data/honeywell/HON-future.csv', 'data/medtronic/MDT-future.csv',
+    #                                                                              'data/fireeye/FEYE-future.csv',
+    #                  'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
+    # actual_future_stocks = ['data/adidas/ADDYY-30.csv', 'data/bitcoin/BTC-USD-test.csv', 'data/costco/COST-test.csv',
+    #                         'data/s&p/^GSPC-test.csv',
+    #                         'data/adp/ADP-30.csv', 'data/honeywell/HON-30.csv', 'data/medtronic/MDT-30.csv',
+    #                         'data/fireeye/FEYE-30.csv', 'data/gopro/GPRO-30.csv', 'data/tesla/TSLA-30.csv']
 
 
 
-    # companies = ['Medtronic', 'FireEye', 'GoPro', 'Tesla']
-    # train_stocks = ['data/medtronic/MDT.csv', 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    # test_stocks = ['data/medtronic/MDT.csv', 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
-    # future_stocks = ['data/medtronic/MDT-future.csv', 'data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
-    # actual_future_stocks = ['data/medtronic/MDT-30.csv','data/fireeye/FEYE-30.csv', 'data/gopro/GPRO-30.csv', 'data/tesla/TSLA-30.csv']
+    companies = ['Medtronic', 'FireEye', 'GoPro', 'Tesla']
+    train_stocks = ['data/medtronic/MDT.csv', 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    test_stocks = ['data/medtronic/MDT.csv', 'data/fireeye/FEYE.csv', 'data/gopro/GPRO.csv', 'data/tesla/TSLA.csv']
+    future_stocks = ['data/medtronic/MDT-future.csv', 'data/fireeye/FEYE-future.csv', 'data/gopro/GPRO-future.csv', 'data/tesla/TSLA-future.csv']
+    actual_future_stocks = ['data/medtronic/MDT-30.csv','data/fireeye/FEYE-30.csv', 'data/gopro/GPRO-30.csv', 'data/tesla/TSLA-30.csv']
 
     columns = ['Open', 'High', 'Low', 'Close', 'Adj Close']
     start = timeit.default_timer()
